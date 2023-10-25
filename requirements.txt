@@ -1,0 +1,22 @@
+fastapi
+uvicorn[standard]
+
+pydantic-settings
+python-multipart==0.0.6
+aiofiles
+python-dotenv
+
+# for database
+redis==5.0.1
+
+# for llm
+langchain
+pypdf
+faiss-cpu
+openai
+tiktoken
+
+# for tests
+pytest
+pytest-mock
+httpx
