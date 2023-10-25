@@ -28,7 +28,7 @@ NOTE: If you are using Compose V1, Use `docker-compose` instead of `docker compo
 - Run `docker compose run app pytest`
 
 ## Pending Implementations
-- The test scaffolding has been initialized but not fully implemented with test cases due to time constraint
+- The test scaffolding has been initialized but not fully implemented with test cases due to time constraint caused by emergencies
 
 ## Notes on Potential Improvements and Additional Features
 The following could not be implemented due to time constraint:
@@ -36,6 +36,7 @@ The following could not be implemented due to time constraint:
 - Handle duplicate uploads by keeping state of document hash (using hashlib.sha256 to generate hash) and comparing document hashes in the upload endpoint function.
 - Use a more robust ID system, such as ULID, instead of a randomly generated string from token.hex.
 - Implement `S3Storage` and use as storage instead of `FileSystemStorage`. This will require installing `boto3`
+- Setup and use a persistent database like MongoDB or Postgres instead of Redis.
 - Implement a persistent vector store like Pinecone or PGVector instead of using FAISS.
 - Persist conversation chain chat memory for subsequent conversation questions.
 - Standardize `settings.SUPPORTED_FILE_TYPES` with an Enum data structure for consistency
