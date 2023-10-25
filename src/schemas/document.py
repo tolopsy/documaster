@@ -1,5 +1,4 @@
 from pydantic import BaseModel, field_validator
-from enum import Enum
 
 
 class NoFileExtensionError(Exception):

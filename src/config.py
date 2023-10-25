@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     VECTORSTORE_DIR: Path = BASE_DIR / "vectordb"
     REDIS_URL: str = Field(default="redis://redis:6379", env="REDIS_URL")
     OPENAI_API_KEY: str = Field(env="OPEN_API_KEY")
-    SUPPORTED_FILE_TYPES: list[str] = ["pdf"]
+    SUPPORTED_FILE_TYPES: tuple[str] = ("pdf",)
 
 
     def model_post_init(self, *args) -> None:

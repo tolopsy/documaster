@@ -68,7 +68,7 @@ def get_vectorstore(*, folder_path: str, doc: DocumentSchema, doc_location: str)
     return FAISSWrapper(faiss=vectorstore)
 
 
-def get_vectorstore_retriever(*, storage: FileLocator, folder_path: str, docs: DocumentSchema):
+def get_vectorstore_retriever(*, storage: FileLocator, folder_path: str, docs: list[DocumentSchema]):
     root_doc = docs[0]
     root_vectorstore = get_vectorstore(
         folder_path=folder_path,
