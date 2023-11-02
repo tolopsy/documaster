@@ -28,9 +28,9 @@ NOTE: If you are using Compose V1, Use `docker-compose` instead of `docker compo
 - Run `docker compose run app pytest`
 
 ## Pending Implementations
-- The test scaffolding has been initialized but not fully implemented with test cases due to time constraint caused by emergencies
+- Tests: The test scaffolding has been initialized but not fully implemented with test cases.
 
-## Notes on Potential Improvements and Additional Features
+## Notes on Future Improvements and Additional Features
 The following could not be implemented due to time constraint:
 
 - Handle duplicate uploads by keeping state of document hash (using hashlib.sha256 to generate hash) and comparing document hashes in the upload endpoint function.
