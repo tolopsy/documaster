@@ -5,5 +5,9 @@ __pycache__/
 .idea
 .vscode
 
+volumes/redis/*
+
+venv/
+
 uploads/
 vectordb/
