@@ -15,14 +15,17 @@ from schemas.inquiry import Inquiry, InquiryResponse
 from storage import FileSystemStorage, Storage
 from database import RedisDB, DB, DocumentDoesNotExist
 from dependencies import validate_supported_types
-from utils import fetch_documents_to_inquire
 
 
-db: DB = RedisDB.create(settings.REDIS_URL)
 storage: Storage = FileSystemStorage.create(settings.UPLOAD_DIR)
+
+async def get_db() -> DB:
+    db = await RedisDB.get_or_create(settings.REDIS_URL)
+    return db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    db = await get_db()
     yield
     await db.close()
 
@@ -42,7 +45,7 @@ app = FastAPI(
     description=f"Upload Documents. Documents must be of supported types: {settings.SUPPORTED_FILE_TYPES}",
     response_model=list[Document]
 )
-async def upload(files: list[UploadFile] = Depends(validate_supported_types)):
+async def upload(files: list[UploadFile] = Depends(validate_supported_types), db: DB = Depends(get_db)):
     docs = []
 
     for file in files:
@@ -55,21 +58,25 @@ async def upload(files: list[UploadFile] = Depends(validate_supported_types)):
 
 
 @app.get("/documents", response_model=list[Document])
-async def list_documents() -> None:
+async def list_documents(db: DB = Depends(get_db)) -> None:
     docs = await db.fetch_all_documents()
     return docs
 
 
 @app.post("/ask", response_model=InquiryResponse)
-async def ask(inquiry: Inquiry):
-    try:
-        docs = await fetch_documents_to_inquire(document_ids=inquiry.document_ids, db=db)
-    except DocumentDoesNotExist as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid document id: {e.doc_id}"
-        )
-    
+async def ask(inquiry: Inquiry, db: DB = Depends(get_db)):
+    document_ids = inquiry.document_ids
+    if document_ids:
+        try:
+            docs = await db.fetch_documents_by_ids(ids=document_ids)
+        except DocumentDoesNotExist as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid document id: {e.doc_id}"
+            )
+    else:
+        docs = await db.fetch_all_documents()
+
     if not docs:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
