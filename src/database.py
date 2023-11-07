@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-import redis
-from redis.client import Redis
+import redis.asyncio as redis
+from redis.asyncio import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 from schemas.document import Document
 
@@ -33,24 +33,34 @@ class DB(ABC):
         ...
     
     @abstractmethod
-    def close(self):
+    async def close(self):
         """Close connection to the database"""
         ...
 
 
 @dataclass
 class RedisDB(DB):
+    """A Singleton Redis Database Wrapper """
     client: Redis
+    _instance: RedisDB | None = None
 
     @classmethod
-    def create(cls, url: str) -> RedisDB:
-        client = redis.from_url(url)
+    async def create(cls, url: str) -> RedisDB:
+        client = await redis.from_url(url)
         try:
-            client.ping()
+            await client.ping()
         except RedisConnectionError as e:
             raise DatabaseConnectionError(f"Redis failed to connect: {e}")
         
         return cls(client=client)
+
+    @classmethod
+    async def get_or_create(cls, url: str) -> RedisDB:
+        """Returns a Singleton RedisDB to prevent multiple client connections per request."""
+        if cls._instance == None:
+            cls._instance = await cls.create(url)
+
+        return cls._instance
 
     def _add_document_prefix(self, doc_id: str):
         return f"doc:{doc_id}"
@@ -59,7 +69,7 @@ class RedisDB(DB):
         docs = []
         for doc_id in ids:
             key = self._add_document_prefix(doc_id)
-            value = self.client.get(key)
+            value = await self.client.get(key)
             if not value:
                 raise DocumentDoesNotExist(doc_id=doc_id, message="invalid document id: {doc_id}")
             doc = Document.model_validate_json(value.decode("utf-8"))
@@ -70,11 +80,11 @@ class RedisDB(DB):
     async def fetch_all_documents(self) -> list[Document]:
         keys_wildcard = self._add_document_prefix("*")
 
-        keys = self.client.keys(keys_wildcard)
+        keys = await self.client.keys(keys_wildcard)
 
         docs = []
         for key in keys:
-            value = self.client.get(key)
+            value = await self.client.get(key)
             if not value:
                 continue
 
@@ -85,7 +95,7 @@ class RedisDB(DB):
 
     async def save_document(self, document: Document):
         key = self._add_document_prefix(document.id)
-        self.client.set(name=key, value=document.model_dump_json())
+        await self.client.set(name=key, value=document.model_dump_json())
     
     async def close(self):
-        self.client.close()
+        await self.client.aclose()
