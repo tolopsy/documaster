@@ -1,14 +1,12 @@
 import pytest
 from unittest.mock import AsyncMock
 from fastapi.testclient import TestClient
+from main import app
 
 
 @pytest.fixture
-def client(mocker):
-    mocker.patch("pathlib.Path.mkdir", return_value=None)
-    from main import app
-    client = TestClient(app)
-    return client
+def client():
+    return TestClient(app)
 
 @pytest.fixture
 def mock_db(mocker):
