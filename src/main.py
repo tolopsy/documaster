@@ -17,7 +17,8 @@ from database import RedisDB, DB, DocumentDoesNotExist
 from dependencies import validate_supported_types
 
 
-storage: Storage = FileSystemStorage.create(settings.UPLOAD_DIR)
+async def get_storage() -> Storage:
+    return FileSystemStorage.create(settings.UPLOAD_DIR)
 
 async def get_db() -> DB:
     db = await RedisDB.get_or_create(settings.REDIS_URL)
@@ -45,7 +46,11 @@ app = FastAPI(
     description=f"Upload Documents. Documents must be of supported types: {settings.SUPPORTED_FILE_TYPES}",
     response_model=list[Document]
 )
-async def upload(files: list[UploadFile] = Depends(validate_supported_types), db: DB = Depends(get_db)):
+async def upload(
+    files: list[UploadFile] = Depends(validate_supported_types),
+    db: DB = Depends(get_db),
+    storage: Storage = Depends(get_storage)
+):
     docs = []
 
     for file in files:
@@ -83,6 +88,7 @@ async def ask(inquiry: Inquiry, db: DB = Depends(get_db)):
             detail=f"No document"
         )
 
+    storage = await get_storage()
     vectorstore_retriever = get_vectorstore_retriever(
         storage=storage,
         folder_path=str(settings.VECTORSTORE_DIR),
