@@ -27,8 +27,6 @@ NOTE: If you are using Compose V1, Use `docker-compose` instead of `docker compo
 ## How to Run Tests
 - Run `docker compose run app pytest`
 
-## Pending Implementations
-- Tests: The test scaffolding has been initialized but not fully implemented with test cases.
 
 ## Notes on Future Improvements and Additional Features
 The following could not be implemented due to time constraint:
