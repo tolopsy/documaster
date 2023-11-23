@@ -39,7 +39,8 @@ def test_post_upload_returns_2xx_for_supported_file_types(client: TestClient, mo
 def test_post_upload_stores_supported_file_in_storage(
         client: TestClient,
         mock_storage: AsyncMock,
-        mock_db: AsyncMock):
+        mock_db: AsyncMock
+    ):
 
     with open(TEST_GOOD_UPLOAD_DATA, "rb") as f:
         _ = client.post("/upload", files={"files": f})
@@ -49,7 +50,8 @@ def test_post_upload_stores_supported_file_in_storage(
 def test_post_upload_saves_document_in_db(
         client: TestClient,
         mock_storage: AsyncMock,
-        mock_db: AsyncMock):
+        mock_db: AsyncMock
+    ):
 
     with open(TEST_GOOD_UPLOAD_DATA, "rb") as f:
         _ = client.post("/upload", files={"files": f})
@@ -57,9 +59,10 @@ def test_post_upload_saves_document_in_db(
     mock_db.save_document.assert_called_once()
 
 
-# TODO: Write test for list_document endpoint
 def test_list_document(client: TestClient, mock_db: AsyncMock):
-    ...
+    response = client.get("/documents")
+    mock_db.fetch_all_documents.assert_called_once()
+    assert response.json() == mock_db.fetch_all_documents.return_value
 
 # TODO: Split 'test_ask' into separate unit tests for each stage in the 'ask' endpoint
 def test_ask(client: TestClient, mock_db: AsyncMock, mock_storage: AsyncMock):
